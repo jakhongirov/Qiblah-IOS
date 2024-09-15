@@ -27,12 +27,12 @@ const meditationCategories = require('./meditation/categories')
 const meditationItems = require('./meditation/items')
 const additionalVotes = require('./votes/votes')
 const mapKey = require('./map/map')
-const click = require('./click/click')
+// const click = require('./click/click')
 const paymentCategories = require('./payment/payment')
 const paymentCheck = require('./payment/check')
-const uzum = require('./uzum/uzum')
+// const uzum = require('./uzum/uzum')
 const transactions = require('./transactions/transactions')
-const payme = require('./payme/payme')
+// const payme = require('./payme/payme')
 const notification = require('./notification/notification')
 
 router
@@ -541,8 +541,8 @@ router
   .delete('/map/key/delete', AUTH, mapKey.DELETE_KEY)
 
   // CLICK
-  .post('/click/prepare', click.Prepare)
-  .post('/click/complete', click.Complete)
+  // .post('/click/prepare', click.Prepare)
+  // .post('/click/complete', click.Complete)
 
   //PAYMENT CATEGORIES
   .get('/payment/categories', paymentCategories.GET)
@@ -554,17 +554,17 @@ router
   .get('/payment/check/:user_id', paymentCheck.GET)
 
   // UZUM
-  .post('/uzum/check', uzum.CHECK)
-  .post('/uzum/confirm', uzum.CONFIRM)
-  .post('/uzum/create', uzum.CREATE)
-  .post('/uzum/reverse', uzum.REVERSE)
-  .post('/uzum/status', uzum.STATUS)
+  // .post('/uzum/check', uzum.CHECK)
+  // .post('/uzum/confirm', uzum.CONFIRM)
+  // .post('/uzum/create', uzum.CREATE)
+  // .post('/uzum/reverse', uzum.REVERSE)
+  // .post('/uzum/status', uzum.STATUS)
 
   //Transactions
   .get("/transactions", AUTH, transactions.GET)
 
   // PAYME
-  .post('/payme', PAYME_CHECK_TOKEN, payme.PAYMENT)
+  // .post('/payme', PAYME_CHECK_TOKEN, payme.PAYMENT)
 
   // NOTIFICATION
   .post('/send/notification', AUTH, notification.SEND)
