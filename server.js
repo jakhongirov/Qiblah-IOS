@@ -576,7 +576,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/public', express.static(path.resolve(__dirname, 'public')))
 app.use('/files', express.static(path.resolve(__dirname, 'files')))
-app.use("/api/v1", router);
+app.use("/api/v1/ios", router);
 const io = socket.initializeSocket(server);
 
 server.listen(PORT, () => {
