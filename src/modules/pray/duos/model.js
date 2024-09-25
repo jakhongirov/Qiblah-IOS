@@ -18,7 +18,7 @@ const duos = (lang_id) => {
       ) : ""
       }
       ORDER BY
-         duos
+         id
    `;
 
    return fetchALL(QUERY)
