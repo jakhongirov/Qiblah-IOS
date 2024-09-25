@@ -1,21 +1,35 @@
 const model = require('./model')
 const path = require('path')
-const FS = require('../../lib/fs/fs')
-
+const FS = require('../../../lib/fs/fs')
 
 module.exports = {
    GET: async (req, res) => {
       try {
-         const { lang } = req.query
+         const { lang_id, gender } = req.query
 
-         if (lang) {
-            const getCategoriesByLang = await model.getCategoriesByLang(lang)
+         if (lang_id && gender) {
+            const categoriesByLangGender = await model.categories(lang_id, gender)
 
-            if (getCategoriesByLang) {
+            if (categoriesByLangGender?.length > 0) {
                return res.status(200).json({
                   status: 200,
                   message: "Success",
-                  data: getCategoriesByLang
+                  data: categoriesByLangGender
+               })
+            } else {
+               return res.status(404).json({
+                  status: 404,
+                  message: "Not found"
+               })
+            }
+         } else if (lang_id) {
+            const categoriesByLang = await model.categories(lang_id)
+
+            if (categoriesByLang?.length > 0) {
+               return res.status(200).json({
+                  status: 200,
+                  message: "Success",
+                  data: categoriesByLang
                })
             } else {
                return res.status(404).json({
@@ -24,13 +38,13 @@ module.exports = {
                })
             }
          } else {
-            const getCategories = await model.getCategories()
+            const categories = await model.categories(lang_id)
 
-            if (getCategories) {
+            if (categories?.length > 0) {
                return res.status(200).json({
                   status: 200,
                   message: "Success",
-                  data: getCategories
+                  data: categories
                })
             } else {
                return res.status(404).json({
@@ -38,42 +52,6 @@ module.exports = {
                   message: "Not found"
                })
             }
-         }
-
-      } catch (error) {
-         console.log(error);
-         res.status(500).json({
-            status: 500,
-            message: "Interval Server Error"
-         })
-      }
-   },
-
-   GET_ID: async (req, res) => {
-      try {
-         const { id } = req.params
-
-         if (id) {
-            const foundCategory = await model.foundCategory(id)
-
-            if (foundCategory) {
-               return res.status(200).json({
-                  status: 200,
-                  message: "Success",
-                  data: foundCategory
-               })
-            } else {
-               return res.status(404).json({
-                  status: 404,
-                  message: "Not found"
-               })
-            }
-
-         } else {
-            return res.status(400).json({
-               status: 400,
-               message: "Bad request, send category id"
-            })
          }
 
       } catch (error) {
@@ -87,17 +65,12 @@ module.exports = {
 
    ADD_FILE: async (req, res) => {
       try {
-         const data = new FS(path.resolve(__dirname, '..', '..', '..', 'files', `categories.json`))
+         const data = new FS(path.resolve(__dirname, '..', '..', '..', '..', 'files', ``))
          const file = JSON.parse(data.read())
 
          for (const item of file) {
             await model.addCategory(
-               item?.name,
-               item?.lang,
-               item?.backgrounColor,
-               item?.textColor,
-               item?.imageLink,
-               item?.imageLink,
+
             )
          }
 
@@ -120,18 +93,28 @@ module.exports = {
          const uploadPhoto = req.file;
          const {
             category_name,
-            category_lang,
+            category_description,
+            category_text_color,
+            category_description_color,
             category_background_color,
-            category_text_color
+            category_big,
+            category_gender,
+            category_order,
+            lang_id
          } = req.body
          const imgUrl = `${process.env.BACKEND_URL}/${uploadPhoto?.filename}`;
          const imgName = uploadPhoto?.filename;
 
          const addCategory = await model.addCategory(
             category_name,
-            category_lang,
-            category_background_color,
+            category_description,
             category_text_color,
+            category_description_color,
+            category_background_color,
+            category_big,
+            category_gender,
+            category_order,
+            lang_id,
             imgUrl,
             imgName
          )
@@ -164,10 +147,16 @@ module.exports = {
          const {
             category_id,
             category_name,
-            category_lang,
+            category_description,
+            category_text_color,
+            category_description_color,
             category_background_color,
-            category_text_color
+            category_big,
+            category_gender,
+            category_order,
+            lang_id
          } = req.body
+
          const foundCategory = await model.foundCategory(category_id)
 
          if (foundCategory) {
@@ -176,7 +165,7 @@ module.exports = {
 
             if (uploadPhoto) {
                if (foundCategory?.category_image_name) {
-                  const deleteOldAvatar = new FS(path.resolve(__dirname, '..', '..', '..', 'public', 'images', `${foundCategory?.category_image_name}`))
+                  const deleteOldAvatar = new FS(path.resolve(__dirname, '..', '..', '..', '..', 'public', 'images', `${foundCategory?.category_image_name}`))
                   deleteOldAvatar.delete()
                }
                imgUrl = `${process.env.BACKEND_URL}/${uploadPhoto?.filename}`;
@@ -189,9 +178,14 @@ module.exports = {
             const editCategory = await model.editCategory(
                category_id,
                category_name,
-               category_lang,
-               category_background_color,
+               category_description,
                category_text_color,
+               category_description_color,
+               category_background_color,
+               category_big,
+               category_gender,
+               category_order,
+               lang_id,
                imgUrl,
                imgName
             )
@@ -235,7 +229,7 @@ module.exports = {
             if (deleteCategory) {
 
                if (foundCategory?.category_image_name) {
-                  const deleteOldAvatar = new FS(path.resolve(__dirname, '..', '..', '..', 'public', 'images', `${foundCategory?.category_image_name}`))
+                  const deleteOldAvatar = new FS(path.resolve(__dirname, '..', '..', '..', '..', 'public', 'images', `${foundCategory?.category_image_name}`))
                   deleteOldAvatar.delete()
                }
 

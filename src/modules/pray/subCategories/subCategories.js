@@ -1,21 +1,20 @@
 const model = require('./model')
 const path = require('path')
-const FS = require('../../lib/fs/fs')
-
+const FS = require('../../../lib/fs/fs')
 
 module.exports = {
    GET: async (req, res) => {
       try {
-         const { lang } = req.query
+         const { category_id } = req.query
 
-         if (lang) {
-            const getCategoriesByLang = await model.getCategoriesByLang(lang)
+         if (category_id) {
+            const subCategoriesByCategoryID = await model.subCategories(category_id)
 
-            if (getCategoriesByLang) {
+            if (subCategoriesByCategoryID?.length > 0) {
                return res.status(200).json({
                   status: 200,
                   message: "Success",
-                  data: getCategoriesByLang
+                  data: subCategoriesByCategoryID
                })
             } else {
                return res.status(404).json({
@@ -24,13 +23,13 @@ module.exports = {
                })
             }
          } else {
-            const getCategories = await model.getCategories()
+            const subCategories = await model.subCategories()
 
-            if (getCategories) {
+            if (subCategories?.length > 0) {
                return res.status(200).json({
                   status: 200,
                   message: "Success",
-                  data: getCategories
+                  data: subCategories
                })
             } else {
                return res.status(404).json({
@@ -38,42 +37,6 @@ module.exports = {
                   message: "Not found"
                })
             }
-         }
-
-      } catch (error) {
-         console.log(error);
-         res.status(500).json({
-            status: 500,
-            message: "Interval Server Error"
-         })
-      }
-   },
-
-   GET_ID: async (req, res) => {
-      try {
-         const { id } = req.params
-
-         if (id) {
-            const foundCategory = await model.foundCategory(id)
-
-            if (foundCategory) {
-               return res.status(200).json({
-                  status: 200,
-                  message: "Success",
-                  data: foundCategory
-               })
-            } else {
-               return res.status(404).json({
-                  status: 404,
-                  message: "Not found"
-               })
-            }
-
-         } else {
-            return res.status(400).json({
-               status: 400,
-               message: "Bad request, send category id"
-            })
          }
 
       } catch (error) {
@@ -87,17 +50,12 @@ module.exports = {
 
    ADD_FILE: async (req, res) => {
       try {
-         const data = new FS(path.resolve(__dirname, '..', '..', '..', 'files', `categories.json`))
+         const data = new FS(path.resolve(__dirname, '..', '..', '..', '..', 'files', ``))
          const file = JSON.parse(data.read())
 
          for (const item of file) {
-            await model.addCategory(
-               item?.name,
-               item?.lang,
-               item?.backgrounColor,
-               item?.textColor,
-               item?.imageLink,
-               item?.imageLink,
+            await model.addSubCategories(
+
             )
          }
 
@@ -115,32 +73,32 @@ module.exports = {
       }
    },
 
-   ADD_CATEGORY: async (req, res) => {
+   ADD_SUB_CATEGORIES: async (req, res) => {
       try {
          const uploadPhoto = req.file;
          const {
-            category_name,
-            category_lang,
-            category_background_color,
-            category_text_color
+            sub_category_name,
+            have_item,
+            numeric,
+            category_id
          } = req.body
          const imgUrl = `${process.env.BACKEND_URL}/${uploadPhoto?.filename}`;
          const imgName = uploadPhoto?.filename;
 
-         const addCategory = await model.addCategory(
-            category_name,
-            category_lang,
-            category_background_color,
-            category_text_color,
+         const addSubCategories = await model.addSubCategories(
+            sub_category_name,
+            have_item,
+            numeric,
+            category_id,
             imgUrl,
             imgName
          )
 
-         if (addCategory) {
+         if (addSubCategories) {
             return res.status(201).json({
                status: 201,
                message: "Created",
-               data: addCategory
+               data: addSubCategories
             })
          } else {
             return res.status(400).json({
@@ -158,49 +116,49 @@ module.exports = {
       }
    },
 
-   EDIT_CATEGORY: async (req, res) => {
+   EDIT_SUB_CATEGORIES: async (req, res) => {
       try {
          const uploadPhoto = req.file;
          const {
-            category_id,
-            category_name,
-            category_lang,
-            category_background_color,
-            category_text_color
+            sub_category_id,
+            sub_category_name,
+            have_item,
+            numeric,
+            category_id
          } = req.body
-         const foundCategory = await model.foundCategory(category_id)
+         const foundSubCategory = await model.foundSubCategory(sub_category_id)
 
-         if (foundCategory) {
+         if (foundSubCategory) {
             let imgUrl = '';
             let imgName = '';
 
             if (uploadPhoto) {
-               if (foundCategory?.category_image_name) {
-                  const deleteOldAvatar = new FS(path.resolve(__dirname, '..', '..', '..', 'public', 'images', `${foundCategory?.category_image_name}`))
+               if (foundSubCategory?.sub_category_image_name) {
+                  const deleteOldAvatar = new FS(path.resolve(__dirname, '..', '..', '..', '..', 'public', 'images', `${foundSubCategory?.sub_category_image_name}`))
                   deleteOldAvatar.delete()
                }
                imgUrl = `${process.env.BACKEND_URL}/${uploadPhoto?.filename}`;
                imgName = uploadPhoto?.filename;
             } else {
-               imgUrl = foundCategory?.category_image_link;
-               imgName = foundCategory?.category_image_name;
+               imgUrl = foundSubCategory?.sub_category_image_link;
+               imgName = foundSubCategory?.sub_category_image_name;
             }
 
-            const editCategory = await model.editCategory(
+            const editSubCategory = await model.editSubCategory(
+               sub_category_id,
+               sub_category_name,
+               have_item,
+               numeric,
                category_id,
-               category_name,
-               category_lang,
-               category_background_color,
-               category_text_color,
                imgUrl,
                imgName
             )
 
-            if (editCategory) {
+            if (editSubCategory) {
                return res.status(200).json({
                   status: 200,
                   message: "Success",
-                  data: editCategory
+                  data: editSubCategory
                })
             } else {
                return res.status(400).json({
@@ -224,25 +182,25 @@ module.exports = {
       }
    },
 
-   DELETE_CATEGORY: async (req, res) => {
+   DELETE_SUB_CATEGORIES: async (req, res) => {
       try {
-         const { category_id } = req.body
-         const foundCategory = await model.foundCategory(category_id)
+         const { sub_category_id } = req.body
+         const foundSubCategory = await model.foundSubCategory(sub_category_id)
 
-         if (foundCategory) {
-            const deleteCategory = await model.deleteCategory(category_id)
+         if (foundSubCategory) {
+            const deleteSubCategory = await model.deleteSubCategory(sub_category_id)
 
-            if (deleteCategory) {
+            if (deleteSubCategory) {
 
-               if (foundCategory?.category_image_name) {
-                  const deleteOldAvatar = new FS(path.resolve(__dirname, '..', '..', '..', 'public', 'images', `${foundCategory?.category_image_name}`))
+               if (foundSubCategory?.sub_category_image_name) {
+                  const deleteOldAvatar = new FS(path.resolve(__dirname, '..', '..', '..', '..', 'public', 'images', `${foundSubCategory?.sub_category_image_name}`))
                   deleteOldAvatar.delete()
                }
 
                return res.status(200).json({
                   status: 200,
                   message: "Success",
-                  data: deleteCategory
+                  data: deleteSubCategory
                })
             } else {
                return res.status(400).json({
