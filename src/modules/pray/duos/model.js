@@ -1,6 +1,6 @@
 const { fetchALL, fetch } = require('../../../lib/postgres')
 
-const duos = () => {
+const duos = (lang_id) => {
    const QUERY = `
       SELECT
          *
