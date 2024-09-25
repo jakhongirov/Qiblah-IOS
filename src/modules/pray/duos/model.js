@@ -5,7 +5,18 @@ const duos = () => {
       SELECT
          *
       FROM
-         duos
+         duos a
+      ${lang_id ? (
+         `
+            INNER JOIN
+               languages b
+            ON
+               a.lang_id = b.id
+            WHERE
+               b.name = '${lang_id}'
+            `
+      ) : ""
+      }
       ORDER BY
          duos
    `;
