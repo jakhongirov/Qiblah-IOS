@@ -3,7 +3,20 @@ const { fetchALL, fetch } = require('../../../lib/postgres')
 const elements = (sub_category_id) => {
    const QUERY = `
       SELECT
-         *
+         id,
+         title,
+         text_1,
+         text_2,
+         zam_suras,
+         null AS image_link,
+         null AS image_name,
+         null As audio_link,
+         null AS audio_name,
+         duo_1,
+         duo_2,
+         duo_3,
+         sub_category_id,
+         create_at
       FROM
          elements
       ${sub_category_id ? (

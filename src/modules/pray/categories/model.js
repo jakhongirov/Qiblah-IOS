@@ -3,7 +3,19 @@ const { fetchALL, fetch } = require('../../../lib/postgres')
 const categories = (lang_id, gender) => {
    const QUERY = `
       SELECT
-         *
+         category_id,
+         category_name,
+         category_description,
+         category_text_color,
+         category_description_color,
+         category_background_color,
+         category_big,
+         category_gender,
+         category_order,
+         lang_id,
+         null AS category_image_link,
+         null AS category_image_name,
+         category_create_at
       FROM
          pray_categories a
       ${lang_id && gender ? (
