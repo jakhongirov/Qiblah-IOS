@@ -7,8 +7,8 @@ const duos = (lang_id) => {
          title,
          text,
          translation,
-         null AS audio_link,
-         null AS audio_name,
+         audio_link,
+         audio_name,
          zam_sura,
          lang_id,
          create_at

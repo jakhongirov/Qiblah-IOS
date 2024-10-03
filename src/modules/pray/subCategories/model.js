@@ -5,8 +5,8 @@ const subCategories = (category_id) => {
       SELECT
          sub_category_id,
          sub_category_name,
-         null AS sub_category_image_link,
-         null AS sub_category_image_name,
+         sub_category_image_link,
+         sub_category_image_name,
          have_item,
          numeric,
          category_id,

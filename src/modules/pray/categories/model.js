@@ -13,8 +13,8 @@ const categories = (lang_id, gender) => {
          category_gender,
          category_order,
          lang_id,
-         null AS category_image_link,
-         null AS category_image_name,
+         category_image_link,
+         category_image_name,
          category_create_at
       FROM
          pray_categories a
