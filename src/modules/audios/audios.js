@@ -37,7 +37,7 @@ module.exports = {
                   status: 404,
                   message: "Not found"
                })
-            } ƒ
+            } 
          }
 
       } catch (error) {
