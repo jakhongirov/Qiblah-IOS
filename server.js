@@ -64,6 +64,7 @@ bot.onText(/\/start ?(.*)?/, async (msg, match) => {
                await model.editStep(chatId, 'start')
             } else {
                await model.addChatId(param.split('=')[1], chatId)
+               await model.editStep(chatId, 'start')
             }
          })
       } else if (param?.startsWith('token=')) {
@@ -98,6 +99,7 @@ bot.onText(/\/start ?(.*)?/, async (msg, match) => {
                   await model.editStep(chatId, 'register')
                } else {
                   await model.addChatId(foundUser?.user_id, chatId)
+                  await model.editStep(chatId, 'register')
                }
             });
 
