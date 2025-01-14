@@ -588,7 +588,8 @@ bot.on('contact', async (msg) => {
 
             } else {
                const updatedUserPhone = await model.updatedUserPhone(checkUser[chatId]?.user_id, phoneNumber);
-               console.log(updatedUserPhone)
+               console.log("update", updatedUserPhone)
+               console.log("update user", checkUser[chatId])
 
                if (updatedUserPhone) {
                   bot.sendMessage(chatId, `Sizning so'rovingiz muvaffaqiyatli qabul qilindi, ilovaga qayting.`, {
