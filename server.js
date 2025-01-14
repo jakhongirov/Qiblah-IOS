@@ -78,7 +78,7 @@ bot.onText(/\/start ?(.*)?/, async (msg, match) => {
 
          if (foundUser) {
             user[chatId] = foundUser;
-            user[chatId].parameter = parameter;
+            user[chatId].parameter = param.split('=')[1];
 
             const content = `Assalomu alaykum, ${foundUser?.user_name}, iltimos bot tilni tanlang:\n\nЗдравствуйте, ${foundUser?.user_name}, пожалуйста выберите язык бота:`;
 
