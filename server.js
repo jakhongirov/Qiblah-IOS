@@ -587,9 +587,9 @@ bot.on('contact', async (msg) => {
                }
 
             } else {
-               const updatedUserPhone = await model.updatedUserPhone(checkUser[chatId]?.user_id, phoneNumber);
+               const updatedUserPhone = await model.updatedUserPhone(user[chatId]?.user_id, phoneNumber);
                console.log("update", updatedUserPhone)
-               console.log("update user", checkUser[chatId])
+               console.log("update user", user[chatId])
 
                if (updatedUserPhone) {
                   bot.sendMessage(chatId, `Sizning so'rovingiz muvaffaqiyatli qabul qilindi, ilovaga qayting.`, {
@@ -824,7 +824,7 @@ bot.on('contact', async (msg) => {
                }
 
             } else {
-               const updatedUserPhone = await model.updatedUserPhone(checkUser?.user_id, phoneNumber);
+               const updatedUserPhone = await model.updatedUserPhone(user[chatId]?.user_id, phoneNumber);
                console.log(updatedUserPhone)
 
                if (updatedUserPhone) {
