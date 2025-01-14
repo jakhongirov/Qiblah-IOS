@@ -117,7 +117,7 @@ bot.onText(/\/start ?(.*)?/, async (msg, match) => {
                }
             }).then(async () => {
                if (foundUserChatId) {
-                  await editStep(chatId, 'start')
+                  await model.editStep(chatId, 'start')
                }
             });
          }
@@ -141,7 +141,7 @@ bot.onText(/\/start ?(.*)?/, async (msg, match) => {
          }
       }).then(async () => {
          if (foundUserChatId) {
-            await editStep(chatId, 'start')
+            await model.editStep(chatId, 'start')
          }
       })
    }
@@ -165,7 +165,7 @@ bot.on('message', async (msg) => {
             resize_keyboard: true
          }
       }).then(async () => {
-         await editStep(chatId, 'menu_uz')
+         await model.editStep(chatId, 'menu_uz')
       });
    } else if (text == "O\'zbekcha" && foundUserChatId?.bot_step == 'register') {
       bot.sendMessage(chatId, `Iltimos, Ro'yxatdan o'tishni yakunlash uchun Kontaktingizni yuboring 🔽`, {
@@ -180,7 +180,7 @@ bot.on('message', async (msg) => {
             one_time_keyboard: true
          }
       }).then(async () => {
-         await editStep(chatId, 'register_contact_uz')
+         await model.editStep(chatId, 'register_contact_uz')
       })
    } else if (text == "Русский" && foundUserChatId?.bot_step == 'start') {
       bot.sendMessage(chatId, 'Пожалуйста, выберите необходимое меню:', {
@@ -195,7 +195,7 @@ bot.on('message', async (msg) => {
             resize_keyboard: true
          }
       }).then(async () => {
-         await editStep(chatId, 'menu_ru')
+         await model.editStep(chatId, 'menu_ru')
       });
    } else if (text == "Русский" && foundUserChatId?.bot_step == 'register') {
       bot.sendMessage(chatId, `Пожалуйста, отправьте свой контакт для завершения регистрации 🔽`, {
