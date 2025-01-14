@@ -225,20 +225,20 @@ bot.on('message', async (msg) => {
 
       if (text) {
          content = `Savol: ${msg.text}\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}\nUser_id = ${foundUserChatId?.user_id}  bot_lang = Uzbek`
-         await model.addMessage(msg.chat.id, msg.date);
+         await model.addMessage(chatId, msg.date);
          await bot.sendMessage(process.env.CHAT_ID, content);
       } else if (msg.photo) {
          const fileId = msg.photo[msg.photo.length - 1].file_id; // Get the highest resolution photo
          const caption = msg.caption ? msg.caption : '';
          content = `Rasm yuborildi:\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}\n\nIzoh: ${caption}\nUser_id = ${foundUserChatId?.user_id}  bot_lang = Uzbek`;
-         await model.addMessage(msg.chat.id, msg.date);
+         await model.addMessage(chatId, msg.date);
          await bot.sendPhoto(process.env.CHAT_ID, fileId, {
             caption: content
          });
       } else if (msg.sticker) {
          const fileId = msg.sticker.file_id;
          content = `Stiker yuborildi:\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}\nUser_id = ${foundUserChatId?.user_id}  bot_lang = Uzbek`;
-         await model.addMessage(msg.chat.id, msg.date);
+         await model.addMessage(chatId, msg.date);
          await bot.sendSticker(process.env.CHAT_ID, fileId);
       }
    } else if (foundUserChatId?.bot_step == 'question_ru') {
@@ -246,20 +246,20 @@ bot.on('message', async (msg) => {
 
       if (text) {
          content = `Savol: ${msg.text}\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}\nUser_id = ${foundUserChatId?.user_id}  bot_lang = Russian`
-         await model.addMessage(msg.chat.id, msg.date);
+         await model.addMessage(chatId, msg.date);
          await bot.sendMessage(process.env.CHAT_ID, content);
       } else if (msg.photo) {
          const fileId = msg.photo[msg.photo.length - 1].file_id; // Get the highest resolution photo
          const caption = msg.caption ? msg.caption : '';
          content = `Rasm yuborildi:\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}\n\nIzoh: ${caption}\nUser_id = ${foundUserChatId?.user_id}  bot_lang = Russian`;
-         await model.addMessage(msg.chat.id, msg.date);
+         await model.addMessage(chatId, msg.date);
          await bot.sendPhoto(process.env.CHAT_ID, fileId, {
             caption: content
          });
       } else if (msg.sticker) {
          const fileId = msg.sticker.file_id;
          content = `Stiker yuborildi:\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}\nUser_id = ${foundUserChatId?.user_id}  bot_lang = Russian`;
-         await model.addMessage(msg.chat.id, msg.date);
+         await model.addMessage(chatId, msg.date);
          await bot.sendSticker(process.env.CHAT_ID, fileId);
       }
    } else if (text == "Parolni tiklash") {
