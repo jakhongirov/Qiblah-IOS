@@ -398,7 +398,7 @@ bot.on('contact', async (msg) => {
                         user[chatId]?.user_region,
                         user[chatId]?.user_location,
                         user[chatId]?.user_address_name,
-                        user[chatId]?.user_location_status,
+                        user[chatId]?.user_location_status || 0,
                         user[chatId]?.tracking
                      )
 
@@ -436,7 +436,7 @@ bot.on('contact', async (msg) => {
                         user[chatId]?.user_region,
                         user[chatId]?.user_location,
                         user[chatId]?.user_address_name,
-                        user[chatId]?.user_location_status,
+                        user[chatId]?.user_location_status || 0,
                         user[chatId]?.tracking
                      )
 
@@ -483,7 +483,7 @@ bot.on('contact', async (msg) => {
                         user[chatId]?.user_region,
                         user[chatId]?.user_location,
                         user[chatId]?.user_address_name,
-                        user[chatId]?.user_location_status,
+                        user[chatId]?.user_location_status || 0,
                         user[chatId]?.tracking
                      )
 
@@ -521,7 +521,7 @@ bot.on('contact', async (msg) => {
                         user[chatId]?.user_region,
                         user[chatId]?.user_location,
                         user[chatId]?.user_address_name,
-                        user[chatId]?.user_location_status,
+                        user[chatId]?.user_location_status || 0,
                         user[chatId]?.tracking
                      )
 
@@ -559,7 +559,7 @@ bot.on('contact', async (msg) => {
                      user[chatId]?.user_region,
                      user[chatId]?.user_location,
                      user[chatId]?.user_address_name,
-                     user[chatId]?.user_location_status,
+                     user[chatId]?.user_location_status || 0,
                      user[chatId]?.tracking
                   )
 
@@ -587,7 +587,7 @@ bot.on('contact', async (msg) => {
                }
 
             } else {
-               const updatedUserPhone = await model.updatedUserPhone(checkUser?.user_id, phoneNumber);
+               const updatedUserPhone = await model.updatedUserPhone(checkUser[chatId]?.user_id, phoneNumber);
                console.log(updatedUserPhone)
 
                if (updatedUserPhone) {
