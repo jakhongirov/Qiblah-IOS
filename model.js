@@ -135,7 +135,7 @@ const foundMsg = (date) => {
       FROM
          messages
       WHERE
-         message_dete = $1;
+         message_dete BETWEEN $1 - 2 AND $1;
    `;
 
    return fetch(QUERY, date)
