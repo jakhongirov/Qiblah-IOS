@@ -32,515 +32,942 @@ if (!fs.existsSync(imagesFolderPath)) {
    console.log('Images folder already exists within the public folder.');
 }
 
-// const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
+const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
 
-// const user = {};
+const user = {};
 
-// bot.on('message', async (msg) => {
-//    const chatId = msg.chat.id;
-//    const text = msg.text;
-//    const username = msg.from.first_name;
+bot.onText(/\/start ?(.*)?/, async (msg, match) => {
+   const chatId = msg.chat.id;
+   const param = match[1]?.trim();
+   const username = msg.from.first_name;
+   const foundUserChatId = await model.foundUserChatId(chatId)
 
-//    if (text?.startsWith('/start') && text?.split(' ').length > 1) {
-//       await handleStartCommand(msg, chatId, text, username);
-//    } else if (text == '/start') {
-//       const content = `Assalomu alaykum, ${username}, iltimos bot tilni tanlang:\n\nЗдравствуйте, ${username}, пожалуйста выберите язык бота:`;
+   if (param) {
+      if (param?.startsWith('user_id=')) {
+         const content = `Assalomu alaykum, ${username}, iltimos bot tilni tanlang:\n\nЗдравствуйте, ${username}, пожалуйста выберите язык бота:`;
 
-//       bot.sendMessage(chatId, content, {
-//          reply_markup: {
-//             keyboard: [
-//                [
-//                   {
-//                      text: "O\'zbekcha"
-//                   },
-//                   {
-//                      text: "Русский"
-//                   },
-//                ]
-//             ],
-//             resize_keyboard: true
-//          }
-//       });
-//    }
-// });
+         bot.sendMessage(chatId, content, {
+            reply_markup: {
+               keyboard: [
+                  [{
+                     text: "O\'zbekcha"
+                  },
+                  {
+                     text: "Русский"
+                  },
+                  ]
+               ],
+               resize_keyboard: true
+            }
+         }).then(async () => {
+            if (foundUserChatId) {
+               await model.editStep(chatId, 'start')
+            } else {
+               await model.addChatId(param.split('=')[1], chatId)
+            }
+         })
+      } else if (param?.startsWith('token=')) {
 
-// const handleStartCommand = async (msg, chatId, text, username) => {
-//    const parameter = text.split(' ')[1];
+         if (!user[chatId]) {
+            user[chatId] = {
+               parameter: null,
+            };
+         }
 
-//    try {
+         const foundUser = await model.foundUser(param.split('=')[1]);
 
-//       if (!user[chatId]) {
-//          user[chatId] = {
-//             parameter: null,
-//          };
-//       }
+         if (foundUser) {
+            user[chatId] = foundUser;
+            user[chatId].parameter = parameter;
 
-//       const foundUser = await model.foundUser(parameter);
+            const content = `Assalomu alaykum, ${foundUser?.user_name}, iltimos bot tilni tanlang:\n\nЗдравствуйте, ${foundUser?.user_name}, пожалуйста выберите язык бота:`;
 
-//       if (foundUser) {
-//          user[chatId] = foundUser;
-//          user[chatId].parameter = parameter;
-//          console.log("found", user[chatId])
-//          const content = `Assalomu alaykum, ${foundUser?.user_name}, iltimos bot tilni tanlang:\n\nЗдравствуйте, ${foundUser?.user_name}, пожалуйста выберите язык бота:`;
+            bot.sendMessage(chatId, content, {
+               reply_markup: {
+                  keyboard: [
+                     [{
+                        text: "O\'zbekcha"
+                     }, {
+                        text: "Русский"
+                     }]
+                  ],
+                  resize_keyboard: true
+               }
+            }).then(async () => {
+               if (foundUserChatId) {
+                  await model.editStep(chatId, 'register')
+               } else {
+                  await model.addChatId(foundUser?.user_id, chatId)
+               }
+            });
 
-//          bot.sendMessage(chatId, content, {
-//             reply_markup: {
-//                inline_keyboard: [
-//                   [{ text: 'O\'zbekcha', callback_data: 'uz' }, { text: 'Русский', callback_data: 'ru' }]
-//                ]
-//             }
-//          });
-//       } else {
-//          const content = `Assalomu alaykum, ${username}, Siz ro'yxatdan o'ta olmadiz. Qayta urinib ko'ring.\nЗдравствуйте ${username}, Вы не смогли зарегистрироваться, Повторите попытку `;
+         } else {
+            const content = `Assalomu alaykum, ${username}, Siz ro'yxatdan o'ta olmadiz. Qayta urinib ko'ring.\nЗдравствуйте ${username}, Вы не смогли зарегистрироваться, Повторите попытку `;
 
-//          bot.sendMessage(chatId, content, {
-//             reply_markup: {
-//                keyboard: [
-//                   [{ text: "O\'zbekcha" }, { text: "Русский" }]
-//                ],
-//                resize_keyboard: true
-//             }
-//          });
-//       }
-//    } catch (error) {
-//       console.error(`Error fetching user: ${error.message}`);
-//    }
-// };
+            bot.sendMessage(chatId, content, {
+               reply_markup: {
+                  keyboard: [
+                     [{
+                        text: "O\'zbekcha"
+                     }, {
+                        text: "Русский"
+                     }]
+                  ],
+                  resize_keyboard: true
+               }
+            }).then(async () => {
+               if (foundUserChatId) {
+                  await editStep(chatId, 'start')
+               }
+            });
+         }
 
-// bot.on("message", async (msg) => {
-//    const chatId = msg.chat.id;
-//    const text = msg.text;
+      }
+   } else {
+      const content = `Assalomu alaykum, ${username}, iltimos bot tilni tanlang:\n\nЗдравствуйте, ${username}, пожалуйста выберите язык бота:`;
 
-//    if (text === "O'zbekcha") {
-//       bot.sendMessage(chatId, 'Iltimos, kerakli menyuni tanlang:', {
-//          reply_markup: {
-//             keyboard: [[{ text: "Murojaat qilish" }, { text: "Parolni tiklash" }]],
-//             resize_keyboard: true
-//          }
-//       });
-//    } else if (text === 'Русский') {
-//       bot.sendMessage(chatId, 'Пожалуйста, выберите необходимое меню:', {
-//          reply_markup: {
-//             keyboard: [[{ text: "Задавать вопрос" }, { text: "Восстановление пароля" }]],
-//             resize_keyboard: true
-//          }
-//       });
-//    } else if (text === 'Murojaat qilish' || text === 'Задавать вопрос') {
-//       const languagePrompt = text === 'Murojaat qilish' ? 'Marhamat, murojaatingizni yozing:' : 'Пожалуйста, напишите ваш запрос:';
-//       bot.sendMessage(chatId, languagePrompt, {
-//          reply_markup: { force_reply: true }
-//       }).then((payload) => {
-//          const replyListenerId = bot.onReplyToMessage(payload.chat.id, payload.message_id, async (msg) => {
-//             bot.removeReplyListener(replyListenerId);
+      bot.sendMessage(chatId, content, {
+         reply_markup: {
+            keyboard: [
+               [{
+                  text: "O\'zbekcha"
+               },
+               {
+                  text: "Русский"
+               },
+               ]
+            ],
+            resize_keyboard: true
+         }
+      }).then(async () => {
+         if (foundUserChatId) {
+            await editStep(chatId, 'start')
+         }
+      })
+   }
+})
 
-//             let content;
-//             // const foundUserByChatId = await model.foundUserByChatId(`chat_id: ${msg.chat.id} ${msg.chat.username ? `, username: ${msg.chat.id}` : ""}`)
-//             if (msg.text) {
-//                content = text === 'Murojaat qilish' ? `Savol: ${msg.text}\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}` : `Вопрос: ${msg.text}\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}`;
-//                await model.addMessage(msg.chat.id, msg.date);
-//                await bot.sendMessage(process.env.CHAT_ID, content);
-//             } else if (msg.photo) {
-//                const fileId = msg.photo[msg.photo.length - 1].file_id; // Get the highest resolution photo
-//                const caption = msg.caption ? msg.caption : '';
-//                content = text === 'Murojaat qilish' ? `Rasm yuborildi:\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}\n\nIzoh: ${caption}` : `Фото отправлено:\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}\n\nПодпись: ${caption}`;
-//                await model.addMessage(msg.chat.id, msg.date);
-//                await bot.sendPhoto(process.env.CHAT_ID, fileId, { caption: content });
-//             } else if (msg.sticker) {
-//                const fileId = msg.sticker.file_id;
-//                content = text === 'Murojaat qilish' ? `Stiker yuborildi:\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}` : `Стикер отправлен:\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}`;
-//                await model.addMessage(msg.chat.id, msg.date);
-//                await bot.sendSticker(process.env.CHAT_ID, fileId);
-//             }
+bot.on('message', async (msg) => {
+   const chatId = msg.chat.id;
+   const text = msg.text;
+   const foundUserChatId = await model.foundUserChatId(chatId)
 
-//             bot.sendMessage(chatId, text === 'Murojaat qilish' ? "Tashakkur, tez orada sizga javob qaytaramiz!" : "Спасибо, мы скоро свяжемся с вами!", {
-//                reply_markup: {
-//                   keyboard: [[{ text: text == 'Murojaat qilish' ? "Murojaat qilish" : "Задавать вопрос" }, { text: text == 'Murojaat qilish' ? "Parolni tiklash" : "Восстановление пароля" }]],
-//                   resize_keyboard: true
-//                }
-//             });
-//          });
-//       });
-//    } else if (text == "Parolni tiklash" || text == "Восстановление пароля") {
-//       const languagePrompt = text === 'Parolni tiklash' ? 'Iltimos, kontaktingizni yuboring:' : 'Пожалуйста, пришлите ваш контакт:';
-//       const buttonText = text === 'Parolni tiklash' ? 'Kontaktni yuborish' : 'Отправить контакт';
-//       bot.sendMessage(chatId, languagePrompt, {
-//          reply_markup: {
-//             keyboard: [[{ text: buttonText, request_contact: true }]],
-//             resize_keyboard: true,
-//             one_time_keyboard: true
-//          }
-//       }).then(() => {
-//          const changePassword = async (msg) => {
-//             if (msg.contact) {
-//                let phoneNumber = msg.contact.phone_number;
+   if (text == "O\'zbekcha" && foundUserChatId?.bot_step == 'start') {
+      bot.sendMessage(chatId, 'Iltimos, kerakli menyuni tanlang:', {
+         reply_markup: {
+            keyboard: [
+               [{
+                  text: "Murojaat qilish"
+               }, {
+                  text: "Parolni tiklash"
+               }]
+            ],
+            resize_keyboard: true
+         }
+      }).then(async () => {
+         await editStep(chatId, 'menu_uz')
+      });
+   } else if (text == "O\'zbekcha" && foundUserChatId?.bot_step == 'register') {
+      bot.sendMessage(chatId, `Iltimos, Ro'yxatdan o'tishni yakunlash uchun Kontaktingizni yuboring 🔽`, {
+         reply_markup: {
+            keyboard: [
+               [{
+                  text: 'Kontaktni yuborish',
+                  request_contact: true
+               }]
+            ],
+            resize_keyboard: true,
+            one_time_keyboard: true
+         }
+      }).then(async () => {
+         await editStep(chatId, 'register_contact_uz')
+      })
+   } else if (text == "Русский" && foundUserChatId?.bot_step == 'start') {
+      bot.sendMessage(chatId, 'Пожалуйста, выберите необходимое меню:', {
+         reply_markup: {
+            keyboard: [
+               [{
+                  text: "Задавать вопрос"
+               }, {
+                  text: "Восстановление пароля"
+               }]
+            ],
+            resize_keyboard: true
+         }
+      }).then(async () => {
+         await editStep(chatId, 'menu_ru')
+      });
+   } else if (text == "Русский" && foundUserChatId?.bot_step == 'register') {
+      bot.sendMessage(chatId, `Пожалуйста, отправьте свой контакт для завершения регистрации 🔽`, {
+         reply_markup: {
+            keyboard: [
+               [{
+                  text: 'Отправить контакт',
+                  request_contact: true
+               }]
+            ],
+            resize_keyboard: true,
+            one_time_keyboard: true
+         }
+      }).then(async () => {
+         await model.editStep(chatId, 'register_contact_ru')
+      })
+   } else if (text == 'Murojaat qilish') {
+      bot.sendMessage(chatId, "Marhamat, murojaatingizni yozing:").then(async () => {
+         await model.editStep(chatId, 'question_uz')
+      })
+   } else if (text == 'Задавать вопрос') {
+      bot.sendMessage(chatId, "Пожалуйста, напишите ваш запрос:").then(async () => {
+         await model.editStep(chatId, 'question_ru')
+      })
+   } else if (foundUserChatId?.bot_step == 'question_uz') {
+      let content;
 
-//                if (msg.contact.user_id !== msg.from.id) {
-//                   return bot.sendMessage(msg.chat.id, "Kontakt noto'g'ri", {
-//                      reply_markup: {
-//                         keyboard: [[{ text: buttonText, request_contact: true }]],
-//                         resize_keyboard: true,
-//                         one_time_keyboard: true
-//                      }
-//                   })
-//                }
+      if (text) {
+         content = `Savol: ${msg.text}\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}\nUser_id = ${foundUserChatId?.user_id}  bot_lang = Uzbek`
+         await model.addMessage(msg.chat.id, msg.date);
+         await bot.sendMessage(process.env.CHAT_ID, content);
+      } else if (msg.photo) {
+         const fileId = msg.photo[msg.photo.length - 1].file_id; // Get the highest resolution photo
+         const caption = msg.caption ? msg.caption : '';
+         content = `Rasm yuborildi:\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}\n\nIzoh: ${caption}\nUser_id = ${foundUserChatId?.user_id}  bot_lang = Uzbek`;
+         await model.addMessage(msg.chat.id, msg.date);
+         await bot.sendPhoto(process.env.CHAT_ID, fileId, {
+            caption: content
+         });
+      } else if (msg.sticker) {
+         const fileId = msg.sticker.file_id;
+         content = `Stiker yuborildi:\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}\nUser_id = ${foundUserChatId?.user_id}  bot_lang = Uzbek`;
+         await model.addMessage(msg.chat.id, msg.date);
+         await bot.sendSticker(process.env.CHAT_ID, fileId);
+      }
+   } else if (foundUserChatId?.bot_step == 'question_ru') {
+      let content;
 
-//                if (!phoneNumber.startsWith('+')) {
-//                   phoneNumber = `+${phoneNumber}`;
-//                }
-//                const checkUser = await model.checkUser(phoneNumber)
+      if (text) {
+         content = `Savol: ${msg.text}\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}\nUser_id = ${foundUserChatId?.user_id}  bot_lang = Russian`
+         await model.addMessage(msg.chat.id, msg.date);
+         await bot.sendMessage(process.env.CHAT_ID, content);
+      } else if (msg.photo) {
+         const fileId = msg.photo[msg.photo.length - 1].file_id; // Get the highest resolution photo
+         const caption = msg.caption ? msg.caption : '';
+         content = `Rasm yuborildi:\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}\n\nIzoh: ${caption}\nUser_id = ${foundUserChatId?.user_id}  bot_lang = Russian`;
+         await model.addMessage(msg.chat.id, msg.date);
+         await bot.sendPhoto(process.env.CHAT_ID, fileId, {
+            caption: content
+         });
+      } else if (msg.sticker) {
+         const fileId = msg.sticker.file_id;
+         content = `Stiker yuborildi:\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}\nUser_id = ${foundUserChatId?.user_id}  bot_lang = Russian`;
+         await model.addMessage(msg.chat.id, msg.date);
+         await bot.sendSticker(process.env.CHAT_ID, fileId);
+      }
+   } else if (text == "Parolni tiklash") {
+      bot.sendMessage(chatId, "Iltimos, kontaktingizni yuboring:", {
+         reply_markup: {
+            keyboard: [
+               [{
+                  text: 'Kontaktni yuborish',
+                  request_contact: true
+               }]
+            ],
+            resize_keyboard: true,
+            one_time_keyboard: true
+         }
+      }).then(async () => {
+         await model.editStep(chatId, 'change_password_uz')
+      })
+   } else if (text == "Восстановление пароля") {
+      bot.sendMessage(chatId, "IПожалуйста, пришлите ваш контакт:", {
+         reply_markup: {
+            keyboard: [
+               [{
+                  text: 'Отправить контакт',
+                  request_contact: true
+               }]
+            ],
+            resize_keyboard: true,
+            one_time_keyboard: true
+         }
+      }).then(async () => {
+         await model.editStep(chatId, 'change_password_ru')
+      })
+   } else if (foundUserChatId?.bot_step == 'new_password_uz') {
+      const pass_hash = await bcryptjs.hash(text, 10);
+      const updatedUserPassword = await model.updatedUserPassword(foundUserChatId?.user_id, pass_hash)
 
-//                if (checkUser) {
-//                   const languagePrompt = text === 'Parolni tiklash' ? 'Yangi parolingizni yozing' : 'Введите новый пароль';
-//                   bot.sendMessage(msg.chat.id, languagePrompt, {
-//                      reply_markup: { force_reply: true }
-//                   }).then(payload => {
-//                      const replyListenerId = bot.onReplyToMessage(payload.chat.id, payload.message_id, async msg => {
-//                         bot.removeListener(replyListenerId);
-//                         if (msg.text) {
-//                            const pass_hash = await bcryptjs.hash(msg.text, 10);
-//                            const updatedUserPassword = await model.updatedUserPassword(checkUser?.user_id, pass_hash)
+      if (updatedUserPassword) {
+         const content = `${updatedUserPassword?.user_name}, parolingiz muvaffaqiyatli o'zgartirildi.`
+         bot.sendMessage(chatId, content, {
+            reply_markup: {
+               keyboard: [
+                  [{
+                     text: "Murojaat qilish"
+                  }, {
+                     text: "Parolni tiklash"
+                  }]
+               ],
+               resize_keyboard: true
+            }
+         }).then(async () => {
+            await model.editStep(chatId, 'menu_uz')
+         })
+      }
+   } else if (foundUserChatId?.bot_step == 'new_password_ru') {
+      const pass_hash = await bcryptjs.hash(text, 10);
+      const updatedUserPassword = await model.updatedUserPassword(foundUserChatId?.user_id, pass_hash)
 
-//                            if (updatedUserPassword) {
-//                               const content = text === 'Parolni tiklash' ? `${checkUser?.user_name}, parolingiz muvaffaqiyatli o'zgartirildi.` : `${checkUser?.user_name}, Ваш пароль был успешно изменен.`
-//                               bot.sendMessage(msg.chat.id, content, {
-//                                  reply_markup: {
-//                                     keyboard: [[{ text: text == 'Parolni tiklash' ? "Murojaat qilish" : "Задавать вопрос" }, { text: text == 'Parolni tiklash' ? "Parolni tiklash" : "Восстановление пароля" }]],
-//                                     resize_keyboard: true
-//                                  }
-//                               })
-//                            }
-//                         }
-//                      })
-//                   })
+      if (updatedUserPassword) {
+         const content = `${updatedUserPassword?.user_name}, Ваш пароль был успешно изменен.`
+         bot.sendMessage(chatId, content, {
+            reply_markup: {
+               keyboard: [
+                  [{
+                     text: "Задавать вопрос"
+                  }, {
+                     text: "Восстановление пароля"
+                  }]
+               ],
+               resize_keyboard: true
+            }
+         }).then(async () => {
+            await model.editStep(chatId, 'menu_ru')
+         })
+      }
 
-//                   bot.off('contact', changePassword)
-//                } else {
-//                   const content = text === 'Parolni tiklash' ? `Foydalanuvchi topilmadi` : "Пользователь не найден"
-//                   bot.sendMessage(msg.chat.id, content, {
-//                      reply_markup: {
-//                         keyboard: [[{ text: text == 'Parolni tiklash' ? "Murojaat qilish" : "Задавать вопрос" }, { text: text == 'Parolni tiklash' ? "Parolni tiklash" : "Восстановление пароля" }]],
-//                         resize_keyboard: true
-//                      }
-//                   })
-//                   bot.off('contact', changePassword)
-//                }
-//             }
-//          }
+   } else if (msg.chat.type !== 'group' && !text?.startsWith('/start')) {
+      if (text) {
+         content = `Savol: ${msg.text}\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}\nUser_id = ${foundUserChatId?.user_id}`
+         await model.addMessage(msg.chat.id, msg.date);
+         await bot.sendMessage(process.env.CHAT_ID, content);
+      } else if (msg.photo) {
+         const fileId = msg.photo[msg.photo.length - 1].file_id; // Get the highest resolution photo
+         const caption = msg.caption ? msg.caption : '';
+         content = `Rasm yuborildi:\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}\n\nIzoh: ${caption}\nUser_id = ${foundUserChatId?.user_id}`;
+         await model.addMessage(msg.chat.id, msg.date);
+         await bot.sendPhoto(process.env.CHAT_ID, fileId, {
+            caption: content
+         });
+      } else if (msg.sticker) {
+         const fileId = msg.sticker.file_id;
+         content = `Stiker yuborildi:\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}\nUser_id = ${foundUserChatId?.user_id}`;
+         await model.addMessage(msg.chat.id, msg.date);
+         await bot.sendSticker(process.env.CHAT_ID, fileId);
+      }
+   }
+})
 
-//          bot.on('contact', changePassword);
-//       })
-//    } else if (msg.chat.type !== 'group' && !text?.startsWith('/start')) {
-//       let content;
-//       // const foundUserByChatId = await model.foundUserByChatId(`chat_id: ${msg.chat.id} ${msg.chat.username ? `, username: ${msg.chat.id}` : ""}`)
-//       if (msg.text) {
-//          content = `Savol: ${msg.text}\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}`;
-//          await model.addMessage(msg.chat.id, msg.date);
-//          await bot.sendMessage(process.env.CHAT_ID, content);
-//       } else if (msg.photo) {
-//          const fileId = msg.photo[msg.photo.length - 1].file_id; // Get the highest resolution photo
-//          const caption = msg.caption ? msg.caption : '';
-//          content = `Rasm yuborildi:\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}\n\nIzoh: ${caption}`
-//          await model.addMessage(msg.chat.id, msg.date);
-//          await bot.sendPhoto(process.env.CHAT_ID, fileId, { caption: content });
-//       } else if (msg.sticker) {
-//          const fileId = msg.sticker.file_id;
-//          content = `Stiker yuborildi:\n\n${msg.from.first_name} ${msg.from?.last_name ? msg.from?.last_name : ""} - ${msg.from?.username ? `@${msg.from?.username}` : ""} - ${msg.from?.language_code ? msg.from?.language_code : ""} -  ${msg.from?.id ? `#${msg.from?.id}` : ""}`
-//          await model.addMessage(msg.chat.id, msg.date);
-//          await bot.sendSticker(process.env.CHAT_ID, fileId);
-//       }
-//    }
-// });
+bot.on('contact', async (msg) => {
+   const chatId = msg.chat.id;
+   const foundUserChatId = await model.foundUserChatId(chatId)
 
-// bot.on('callback_query', async (msg) => {
-//    const chatId = msg.message.chat.id;
-//    const data = msg.data;
+   if (msg.contact) {
+      let phoneNumber = msg.contact.phone_number;
 
-//    if (data === 'uz' || data === 'ru') {
-//       await handleLanguageSelection(chatId, data);
-//    }
-// });
+      if (msg.contact.user_id == msg.from.id) {
 
-// const handleLanguageSelection = async (chatId, language) => {
-//    const languageText = language === 'uz' ? `Iltimos, Ro'yxatdan o'tishni yakunlash uchun Kontaktingizni yuboring 🔽` : `Пожалуйста, отправьте свой контакт для завершения регистрации 🔽`;
-//    const buttonText = language === 'uz' ? 'Kontaktni yuborish' : 'Отправить контакт';
+         if (!phoneNumber.startsWith('+')) {
+            phoneNumber = `+${phoneNumber}`;
+         }
 
-//    bot.sendMessage(chatId, languageText, {
-//       reply_markup: {
-//          keyboard: [[{ text: buttonText, request_contact: true }]],
-//          resize_keyboard: true,
-//          one_time_keyboard: true
-//       }
-//    }).then(() => {
-//       const contactHandler = async (msg) => {
-//          if (msg.contact) {
-//             let phoneNumber = msg.contact.phone_number;
-//             if (!phoneNumber.startsWith('+')) {
-//                phoneNumber = `+${phoneNumber}`;
-//             }
+         if (foundUserChatId?.bot_step == 'register_contact_uz') {
 
-//             const checkUser = {}
-//             checkUser[chatId] = await model.checkUser(phoneNumber)
+            const checkUser = {}
+            checkUser[chatId] = await model.checkUser(phoneNumber)
 
-//             if (checkUser[chatId]) {
-//                console.log("check", checkUser[chatId])
+            if (checkUser[chatId]) {
 
-//                if (checkUser[chatId]?.user_premium) {
-//                   console.log("check user premium")
+               if (checkUser[chatId]?.user_premium) {
 
-//                   const expirationDate = new Date(checkUser[chatId]?.user_premium_expires_at);
-//                   const today = new Date();
-//                   const isExpired = expirationDate < today;
+                  const expirationDate = new Date(checkUser[chatId]?.user_premium_expires_at);
+                  const today = new Date();
+                  const isExpired = expirationDate < today;
 
-//                   if (isExpired) {
-//                      console.log("The check user's premium membership has expired.");
-//                      const addToken = await model.addToken(
-//                         checkUser[chatId].user_id,
-//                         user[chatId]?.parameter,
-//                         !checkUser[chatId]?.user_premium,
-//                         checkUser[chatId]?.user_premium_expires_at,
-//                         checkUser[chatId]?.payment_type,
-//                         user[chatId]?.user_country_code,
-//                         user[chatId]?.user_region,
-//                         user[chatId]?.user_location,
-//                         user[chatId]?.user_address_name,
-//                         user[chatId]?.user_location_status,
-//                         user[chatId]?.tracking
-//                      )
+                  if (isExpired) {
+                     console.log("The check user's premium membership has expired.");
 
-//                      if (addToken) {
-//                         const deleteUser = await model.deleteUser(user[chatId].user_id)
-//                         console.log("delete", deleteUser)
-//                         await model.addUserComment(addToken.user_id, `chat_id: ${msg.chat.id} ${msg.chat.username ? `, username: ${msg.chat.id}` : ""}`)
-//                         bot.sendMessage(msg.chat.id, language === 'uz' ? `Siz Ro'yxatdan muvaffaqiyatli o'tdingiz. Endi Qiblah ilovasiga qaytishingiz mumkin ✅` : `Регистрация прошла успешно. Теперь вы можете вернуться в приложение Qiblah ✅`, {
-//                            reply_markup: {
-//                               keyboard: [[{ text: language === 'uz' ? "Murojaat qilish" : "Задавать вопрос" }, { text: language === 'uz' ? "Parolni tiklash" : "Восстановление пароля" }]],
-//                               resize_keyboard: true
-//                            }
-//                         });
-//                         bot.off('contact', contactHandler);
-//                      }
-//                   } else {
-//                      console.log("The check user's premium membership is still valid.");
-//                      console.log(checkUser[chatId]?.user_premium)
-//                      const addToken = await model.addToken(
-//                         checkUser[chatId].user_id,
-//                         user[chatId]?.parameter,
-//                         checkUser[chatId]?.user_premium,
-//                         checkUser[chatId]?.user_premium_expires_at,
-//                         checkUser[chatId]?.payment_type,
-//                         user[chatId]?.user_country_code,
-//                         user[chatId]?.user_region,
-//                         user[chatId]?.user_location,
-//                         user[chatId]?.user_address_name,
-//                         user[chatId]?.user_location_status,
-//                         user[chatId]?.tracking
-//                      )
+                     const addToken = await model.addToken(
+                        checkUser[chatId].user_id,
+                        user[chatId]?.parameter,
+                        !checkUser[chatId]?.user_premium,
+                        checkUser[chatId]?.user_premium_expires_at,
+                        checkUser[chatId]?.payment_type,
+                        user[chatId]?.user_country_code,
+                        user[chatId]?.user_region,
+                        user[chatId]?.user_location,
+                        user[chatId]?.user_address_name,
+                        user[chatId]?.user_location_status,
+                        user[chatId]?.tracking
+                     )
 
-//                      if (addToken) {
-//                         const deleteUser = await model.deleteUser(user[chatId].user_id)
-//                         console.log("delete", deleteUser)
-//                         console.log("add", addToken)
-//                         await model.addUserComment(addToken.user_id, `chat_id: ${msg.chat.id} ${msg.chat.username ? `, username: ${msg.chat.id}` : ""}`)
-//                         bot.sendMessage(msg.chat.id, language === 'uz' ? `Siz Ro'yxatdan muvaffaqiyatli o'tdingiz. Endi Qiblah ilovasiga qaytishingiz mumkin ✅` : `Регистрация прошла успешно. Теперь вы можете вернуться в приложение Qiblah ✅`, {
-//                            reply_markup: {
-//                               keyboard: [[{ text: language === 'uz' ? "Murojaat qilish" : "Задавать вопрос" }, { text: language === 'uz' ? "Parolni tiklash" : "Восстановление пароля" }]],
-//                               resize_keyboard: true
-//                            }
-//                         });
-//                         bot.off('contact', contactHandler);
-//                      }
-//                   }
+                     if (addToken) {
+                        const deleteUser = await model.deleteUser(user[chatId].user_id)
+                        console.log("delete", deleteUser)
+                        await model.addChatId(addToken.user_id, chatId)
 
-//                } else if (user[chatId]?.user_premium) {
-//                   console.log("user premium")
+                        bot.sendMessage(chatId, `Sizning so'rovingiz muvaffaqiyatli qabul qilindi, ilovaga qayting.`, {
+                           reply_markup: {
+                              keyboard: [
+                                 [{
+                                    text: "Murojaat qilish"
+                                 }, {
+                                    text: "Parolni tiklash"
+                                 }]
+                              ],
+                              resize_keyboard: true
+                           }
+                        }).then(async () => {
+                           await model.editStep(chatId, 'menu_uz')
+                        });
+                     }
+                  } else {
+                     console.log("The check user's premium membership is still valid.");
+                     console.log(checkUser[chatId]?.user_premium)
 
-//                   const expirationDate = new Date(user[chatId]?.user_premium_expires_at);
-//                   const today = new Date();
-//                   const isExpired = expirationDate < today;
+                     const addToken = await model.addToken(
+                        checkUser[chatId].user_id,
+                        user[chatId]?.parameter,
+                        checkUser[chatId]?.user_premium,
+                        checkUser[chatId]?.user_premium_expires_at,
+                        checkUser[chatId]?.payment_type,
+                        user[chatId]?.user_country_code,
+                        user[chatId]?.user_region,
+                        user[chatId]?.user_location,
+                        user[chatId]?.user_address_name,
+                        user[chatId]?.user_location_status,
+                        user[chatId]?.tracking
+                     )
 
-//                   if (isExpired) {
-//                      console.log("The user's premium membership has expired.");
-//                      const addToken = await model.addToken(
-//                         checkUser[chatId].user_id,
-//                         user[chatId]?.parameter,
-//                         !user[chatId]?.user_premium,
-//                         user[chatId]?.user_premium_expires_at,
-//                         user[chatId]?.payment_type,
-//                         user[chatId]?.user_country_code,
-//                         user[chatId]?.user_region,
-//                         user[chatId]?.user_location,
-//                         user[chatId]?.user_address_name,
-//                         user[chatId]?.user_location_status,
-//                         user[chatId]?.tracking
-//                      )
+                     if (addToken) {
+                        const deleteUser = await model.deleteUser(user[chatId].user_id)
+                        console.log("delete", deleteUser)
+                        console.log("add", addToken)
 
-//                      if (addToken) {
-//                         const deleteUser = await model.deleteUser(user[chatId].user_id)
-//                         console.log("delete", deleteUser)
-//                         await model.addUserComment(addToken.user_id, `chat_id: ${msg.chat.id} ${msg.chat.username ? `, username: ${msg.chat.id}` : ""}`)
-//                         bot.sendMessage(msg.chat.id, language === 'uz' ? `Siz Ro'yxatdan muvaffaqiyatli o'tdingiz. Endi Qiblah ilovasiga qaytishingiz mumkin ✅` : `Регистрация прошла успешно. Теперь вы можете вернуться в приложение Qiblah ✅`, {
-//                            reply_markup: {
-//                               keyboard: [[{ text: language === 'uz' ? "Murojaat qilish" : "Задавать вопрос" }, { text: language === 'uz' ? "Parolni tiklash" : "Восстановление пароля" }]],
-//                               resize_keyboard: true
-//                            }
-//                         });
-//                         bot.off('contact', contactHandler);
-//                      }
-//                   } else {
-//                      console.log("The user's premium membership is still valid.");
-//                      const addToken = await model.addToken(
-//                         checkUser[chatId].user_id,
-//                         user[chatId]?.parameter,
-//                         user[chatId]?.user_premium,
-//                         user[chatId]?.user_premium_expires_at,
-//                         user[chatId]?.payment_type,
-//                         user[chatId]?.user_country_code,
-//                         user[chatId]?.user_region,
-//                         user[chatId]?.user_location,
-//                         user[chatId]?.user_address_name,
-//                         user[chatId]?.user_location_status,
-//                         user[chatId]?.tracking
-//                      )
+                        await model.addChatId(addToken.user_id, chatId)
 
-//                      if (addToken) {
-//                         const deleteUser = await model.deleteUser(user[chatId].user_id)
-//                         console.log("delete", deleteUser)
-//                         await model.addUserComment(addToken.user_id, `chat_id: ${msg.chat.id} ${msg.chat.username ? `, username: ${msg.chat.id}` : ""}`)
-//                         bot.sendMessage(msg.chat.id, language === 'uz' ? `Siz Ro'yxatdan muvaffaqiyatli o'tdingiz. Endi Qiblah ilovasiga qaytishingiz mumkin ✅` : `Регистрация прошла успешно. Теперь вы можете вернуться в приложение Qiblah ✅`, {
-//                            reply_markup: {
-//                               keyboard: [
-//                                  [{ text: language === 'uz' ? "Murojaat qilish" : "Задавать вопрос" }, { text: language === 'uz' ? "Parolni tiklash" : "Восстановление пароля" }]
-//                               ],
-//                               resize_keyboard: true
-//                            }
-//                         });
-//                         bot.off('contact', contactHandler);
-//                      }
-//                   }
-//                } else {
-//                   console.log("users not premium")
-//                   const addToken = await model.addToken(
-//                      checkUser[chatId].user_id,
-//                      user[chatId]?.parameter,
-//                      user[chatId]?.user_premium,
-//                      user[chatId]?.user_premium_expires_at,
-//                      user[chatId]?.payment_type,
-//                      user[chatId]?.user_country_code,
-//                      user[chatId]?.user_region,
-//                      user[chatId]?.user_location,
-//                      user[chatId]?.user_address_name,
-//                      user[chatId]?.user_location_status,
-//                      user[chatId]?.tracking
-//                   )
+                        bot.sendMessage(chatId, `Sizning so'rovingiz muvaffaqiyatli qabul qilindi, ilovaga qayting.`, {
+                           reply_markup: {
+                              keyboard: [
+                                 [{
+                                    text: "Murojaat qilish"
+                                 }, {
+                                    text: "Parolni tiklash"
+                                 }]
+                              ],
+                              resize_keyboard: true
+                           }
+                        }).then(async () => {
+                           await model.editStep(chatId, 'menu_uz')
+                        });
+                     }
+                  }
+               } else if (user[chatId]?.user_premium) {
+                  console.log("user premium")
 
-//                   if (addToken) {
-//                      const deleteUser = await model.deleteUser(user[chatId].user_id)
-//                      console.log("delete", deleteUser)
-//                      await model.addUserComment(addToken.user_id, `chat_id: ${msg.chat.id} ${msg.chat.username ? `, username: ${msg.chat.id}` : ""}`)
-//                      bot.sendMessage(msg.chat.id, language === 'uz' ? `Siz Ro'yxatdan muvaffaqiyatli o'tdingiz. Endi Qiblah ilovasiga qaytishingiz mumkin ✅` : `Регистрация прошла успешно. Теперь вы можете вернуться в приложение Qiblah ✅`, {
-//                         reply_markup: {
-//                            keyboard: [
-//                               [{ text: language === 'uz' ? "Murojaat qilish" : "Задавать вопрос" }, { text: language === 'uz' ? "Parolni tiklash" : "Восстановление пароля" }]
-//                            ],
-//                            resize_keyboard: true
-//                         }
-//                      });
-//                      bot.off('contact', contactHandler);
-//                   }
-//                }
+                  const expirationDate = new Date(user[chatId]?.user_premium_expires_at);
+                  const today = new Date();
+                  const isExpired = expirationDate < today;
 
-//                // const addToken = await model.addToken(checkUser.user_id, user?.parameter)
+                  if (isExpired) {
+                     console.log("The user's premium membership has expired.");
 
-//                // if (addToken) {
-//                //    await model.deleteUser(user.user_id)
-//                //    bot.sendMessage(msg.chat.id, language === 'uz' ? `Siz Ro'yxatdan muvaffaqiyatli o'tdingiz. Endi Qiblah ilovasiga qaytishingiz mumkin ✅` : `Регистрация прошла успешно. Теперь вы можете вернуться в приложение Qiblah ✅`, {
-//                //       reply_markup: {
-//                //          keyboard: [
-//                //             [{ text: language === 'uz' ? "Murojaat qilish" : "Задавать вопрос" }, { text: language === 'uz' ? "Parolni tiklash" : "Восстановление пароля" }]
-//                //          ],
-//                //          resize_keyboard: true
-//                //       }
-//                //    });
-//                //    bot.off('contact', contactHandler);
-//                // }
-//             } else {
-//                const updatedUserPhone = await model.updatedUserPhone(user[chatId]?.user_id, phoneNumber, user[chatId]?.tracking);
-//                if (updatedUserPhone) {
-//                   await model.addUserComment(user[chatId]?.user_id, `chat_id: ${msg.chat.id} ${msg.chat.username ? `, username: ${msg.chat.id}` : ""}`)
-//                   bot.sendMessage(msg.chat.id, language === 'uz' ? `Sizning so'rovingiz muvaffaqiyatli qabul qilindi, ilovaga qayting.` : `Ваш запрос успешно получен, вернитесь к приложению.`, {
-//                      reply_markup: {
-//                         keyboard: [
-//                            [{ text: language === 'uz' ? "Murojaat qilish" : "Задавать вопрос" }, { text: language === 'uz' ? "Parolni tiklash" : "Восстановление пароля" }]
-//                         ],
-//                         resize_keyboard: true
-//                      }
-//                   });
-//                   bot.off('contact', contactHandler); // Remove the listener after processing
-//                }
-//             }
-//          }
-//       };
+                     const addToken = await model.addToken(
+                        checkUser[chatId].user_id,
+                        user[chatId]?.parameter,
+                        !user[chatId]?.user_premium,
+                        user[chatId]?.user_premium_expires_at,
+                        user[chatId]?.payment_type,
+                        user[chatId]?.user_country_code,
+                        user[chatId]?.user_region,
+                        user[chatId]?.user_location,
+                        user[chatId]?.user_address_name,
+                        user[chatId]?.user_location_status,
+                        user[chatId]?.tracking
+                     )
 
-//       bot.on('contact', contactHandler);
-//    });
-// };
+                     if (addToken) {
+                        const deleteUser = await model.deleteUser(user[chatId].user_id)
+                        console.log("delete", deleteUser)
 
-// bot.on('message', async (msg) => {
-//    if (msg.chat.type === 'group' && msg.reply_to_message) {
-//       const date = msg.reply_to_message.date;
-//       console.log('date', date)
-//       const foundMsg = await model.foundMsg(date);
-//       console.log("bot", foundMsg)
+                        await model.addChatId(addToken.user_id, chatId)
 
-//       let content;
-//       if (msg.text) {
-//          content = `${msg.text}`;
-//          await bot.sendMessage(foundMsg?.chat_id, content).catch((error) => {
-//             if (error.response && error.response.statusCode === 403) {
-//                bot.sendMessage(process.env.CHAT_ID, `This user blocked bot`)
-//             } else {
-//                console.error('Error sending message:', error.message);
-//             }
-//          });
-//       } else if (msg.photo) {
-//          const fileId = msg.photo[msg.photo.length - 1].file_id; // Get the highest resolution photo
-//          const caption = msg.caption ? msg.caption : '';
-//          content = `${caption}`
-//          await bot.sendPhoto(foundMsg?.chat_id, fileId, { caption: content }).catch((error) => {
-//             if (error.response && error.response.statusCode === 403) {
-//                bot.sendMessage(process.env.CHAT_ID, `This user blocked bot`)
-//             } else {
-//                console.error('Error sending message:', error.message);
-//             }
-//          });;
-//       } else if (msg.sticker) {
-//          const fileId = msg.sticker.file_id;
-//          await bot.sendSticker(foundMsg?.chat_id, fileId).catch((error) => {
-//             if (error.response && error.response.statusCode === 403) {
-//                bot.sendMessage(process.env.CHAT_ID, `This user blocked bot`)
-//             } else {
-//                console.error('Error sending message:', error.message);
-//             }
-//          });;
-//       }
+                        bot.sendMessage(chatId, `Sizning so'rovingiz muvaffaqiyatli qabul qilindi, ilovaga qayting.`, {
+                           reply_markup: {
+                              keyboard: [
+                                 [{
+                                    text: "Murojaat qilish"
+                                 }, {
+                                    text: "Parolni tiklash"
+                                 }]
+                              ],
+                              resize_keyboard: true
+                           }
+                        }).then(async () => {
+                           await model.editStep(chatId, 'menu_uz')
+                        });
+                     }
 
-//       // bot.sendMessage(foundMsg?.chat_id, `Javob: ${msg.text}`).catch((error) => {
-//       //    if (error.response && error.response.statusCode === 403) {
-//       //       bot.sendMessage(process.env.CHAT_ID, `This user blocked bot`)
-//       //    } else {
-//       //       console.error('Error sending message:', error.message);
-//       //    }
-//       // });
-//    }
-// });
+                  } else {
+                     console.log("The user's premium membership is still valid.");
+                     const addToken = await model.addToken(
+                        checkUser[chatId].user_id,
+                        user[chatId]?.parameter,
+                        user[chatId]?.user_premium,
+                        user[chatId]?.user_premium_expires_at,
+                        user[chatId]?.payment_type,
+                        user[chatId]?.user_country_code,
+                        user[chatId]?.user_region,
+                        user[chatId]?.user_location,
+                        user[chatId]?.user_address_name,
+                        user[chatId]?.user_location_status,
+                        user[chatId]?.tracking
+                     )
 
-// bot.onText(/\/reply/, (msg) => {
-//    const chatId = msg.chat.id;
-//    const repliedMessageId = msg.reply_to_message.message_id;
-//    bot.sendMessage(chatId, 'Replying to the bot message', {
-//       reply_to_message_id: repliedMessageId
-//    });
-// });
+                     if (addToken) {
+                        const deleteUser = await model.deleteUser(user[chatId].user_id)
+                        console.log("delete", deleteUser)
+
+                        await model.addChatId(addToken.user_id, chatId)
+
+                        bot.sendMessage(chatId, `Sizning so'rovingiz muvaffaqiyatli qabul qilindi, ilovaga qayting.`, {
+                           reply_markup: {
+                              keyboard: [
+                                 [{
+                                    text: "Murojaat qilish"
+                                 }, {
+                                    text: "Parolni tiklash"
+                                 }]
+                              ],
+                              resize_keyboard: true
+                           }
+                        }).then(async () => {
+                           await model.editStep(chatId, 'menu_uz')
+                        });
+                     }
+                  }
+               } else {
+                  console.log("users not premium")
+                  const addToken = await model.addToken(
+                     checkUser[chatId].user_id,
+                     user[chatId]?.parameter,
+                     user[chatId]?.user_premium,
+                     user[chatId]?.user_premium_expires_at,
+                     user[chatId]?.payment_type,
+                     user[chatId]?.user_country_code,
+                     user[chatId]?.user_region,
+                     user[chatId]?.user_location,
+                     user[chatId]?.user_address_name,
+                     user[chatId]?.user_location_status,
+                     user[chatId]?.tracking
+                  )
+
+                  if (addToken) {
+                     const deleteUser = await model.deleteUser(user[chatId]?.user_id)
+                     console.log("delete", deleteUser)
+
+                     await model.addChatId(addToken.user_id, chatId)
+
+                     bot.sendMessage(chatId, `Sizning so'rovingiz muvaffaqiyatli qabul qilindi, ilovaga qayting.`, {
+                        reply_markup: {
+                           keyboard: [
+                              [{
+                                 text: "Murojaat qilish"
+                              }, {
+                                 text: "Parolni tiklash"
+                              }]
+                           ],
+                           resize_keyboard: true
+                        }
+                     }).then(async () => {
+                        await model.editStep(chatId, 'menu_uz')
+                     });
+                  }
+               }
+
+            } else {
+               const updatedUserPhone = await model.updatedUserPhone(checkUser?.user_id, phoneNumber);
+               console.log(updatedUserPhone)
+
+               if (updatedUserPhone) {
+                  bot.sendMessage(chatId, `Sizning so'rovingiz muvaffaqiyatli qabul qilindi, ilovaga qayting.`, {
+                     reply_markup: {
+                        keyboard: [
+                           [{
+                              text: "Murojaat qilish"
+                           }, {
+                              text: "Parolni tiklash"
+                           }]
+                        ],
+                        resize_keyboard: true
+                     }
+                  }).then(async () => {
+                     await model.editStep(chatId, 'menu_uz')
+                  });
+               }
+            }
+
+         } else if (foundUserChatId?.bot_step == "register_contact_ru") {
+
+            const checkUser = {}
+            checkUser[chatId] = await model.checkUser(phoneNumber)
+
+            if (checkUser[chatId]) {
+
+               if (checkUser[chatId]?.user_premium) {
+
+                  const expirationDate = new Date(checkUser[chatId]?.user_premium_expires_at);
+                  const today = new Date();
+                  const isExpired = expirationDate < today;
+
+                  if (isExpired) {
+                     console.log("The check user's premium membership has expired.");
+
+                     const addToken = await model.addToken(
+                        checkUser[chatId].user_id,
+                        user[chatId]?.parameter,
+                        !checkUser[chatId]?.user_premium,
+                        checkUser[chatId]?.user_premium_expires_at,
+                        checkUser[chatId]?.payment_type,
+                        user[chatId]?.user_country_code,
+                        user[chatId]?.user_region,
+                        user[chatId]?.user_location,
+                        user[chatId]?.user_address_name,
+                        user[chatId]?.user_location_status,
+                        user[chatId]?.tracking
+                     )
+
+                     if (addToken) {
+                        const deleteUser = await model.deleteUser(user[chatId].user_id)
+                        console.log("delete", deleteUser)
+                        await model.addChatId(addToken.user_id, chatId)
+
+                        bot.sendMessage(chatId, `Ваш запрос успешно получен, вернитесь к приложению.`, {
+                           reply_markup: {
+                              keyboard: [
+                                 [{
+                                    text: "Задавать вопрос"
+                                 }, {
+                                    text: "Восстановление пароля"
+                                 }]
+                              ],
+                              resize_keyboard: true
+                           }
+                        }).then(async () => {
+                           await model.editStep(chatId, 'menu_ru')
+                        });
+                     }
+                  } else {
+                     console.log("The check user's premium membership is still valid.");
+                     console.log(checkUser[chatId]?.user_premium)
+
+                     const addToken = await model.addToken(
+                        checkUser[chatId].user_id,
+                        user[chatId]?.parameter,
+                        checkUser[chatId]?.user_premium,
+                        checkUser[chatId]?.user_premium_expires_at,
+                        checkUser[chatId]?.payment_type,
+                        user[chatId]?.user_country_code,
+                        user[chatId]?.user_region,
+                        user[chatId]?.user_location,
+                        user[chatId]?.user_address_name,
+                        user[chatId]?.user_location_status,
+                        user[chatId]?.tracking
+                     )
+
+                     if (addToken) {
+                        const deleteUser = await model.deleteUser(user[chatId].user_id)
+                        console.log("delete", deleteUser)
+                        console.log("add", addToken)
+
+                        await model.addChatId(addToken.user_id, chatId)
+
+                        bot.sendMessage(chatId, `Ваш запрос успешно получен, вернитесь к приложению.`, {
+                           reply_markup: {
+                              keyboard: [
+                                 [{
+                                    text: "Задавать вопрос"
+                                 }, {
+                                    text: "Восстановление пароля"
+                                 }]
+                              ],
+                              resize_keyboard: true
+                           }
+                        }).then(async () => {
+                           await model.editStep(chatId, 'menu_ru')
+                        });
+                     }
+                  }
+               } else if (user[chatId]?.user_premium) {
+                  console.log("user premium")
+
+                  const expirationDate = new Date(user[chatId]?.user_premium_expires_at);
+                  const today = new Date();
+                  const isExpired = expirationDate < today;
+
+                  if (isExpired) {
+                     console.log("The user's premium membership has expired.");
+
+                     const addToken = await model.addToken(
+                        checkUser[chatId].user_id,
+                        user[chatId]?.parameter,
+                        !user[chatId]?.user_premium,
+                        user[chatId]?.user_premium_expires_at,
+                        user[chatId]?.payment_type,
+                        user[chatId]?.user_country_code,
+                        user[chatId]?.user_region,
+                        user[chatId]?.user_location,
+                        user[chatId]?.user_address_name,
+                        user[chatId]?.user_location_status,
+                        user[chatId]?.tracking
+                     )
+
+                     if (addToken) {
+                        const deleteUser = await model.deleteUser(user[chatId].user_id)
+                        console.log("delete", deleteUser)
+
+                        await model.addChatId(addToken.user_id, chatId)
+
+                        bot.sendMessage(chatId, `Ваш запрос успешно получен, вернитесь к приложению.`, {
+                           reply_markup: {
+                              keyboard: [
+                                 [{
+                                    text: "Задавать вопрос"
+                                 }, {
+                                    text: "Восстановление пароля"
+                                 }]
+                              ],
+                              resize_keyboard: true
+                           }
+                        }).then(async () => {
+                           await model.editStep(chatId, 'menu_ru')
+                        });
+                     }
+
+                  } else {
+                     console.log("The user's premium membership is still valid.");
+                     const addToken = await model.addToken(
+                        checkUser[chatId].user_id,
+                        user[chatId]?.parameter,
+                        user[chatId]?.user_premium,
+                        user[chatId]?.user_premium_expires_at,
+                        user[chatId]?.payment_type,
+                        user[chatId]?.user_country_code,
+                        user[chatId]?.user_region,
+                        user[chatId]?.user_location,
+                        user[chatId]?.user_address_name,
+                        user[chatId]?.user_location_status,
+                        user[chatId]?.tracking
+                     )
+
+                     if (addToken) {
+                        const deleteUser = await model.deleteUser(user[chatId].user_id)
+                        console.log("delete", deleteUser)
+
+                        await model.addChatId(addToken.user_id, chatId)
+
+                        bot.sendMessage(chatId, `Ваш запрос успешно получен, вернитесь к приложению.`, {
+                           reply_markup: {
+                              keyboard: [
+                                 [{
+                                    text: "Задавать вопрос"
+                                 }, {
+                                    text: "Восстановление пароля"
+                                 }]
+                              ],
+                              resize_keyboard: true
+                           }
+                        }).then(async () => {
+                           await model.editStep(chatId, 'menu_ru')
+                        });
+                     }
+                  }
+               } else {
+                  console.log("users not premium")
+                  const addToken = await model.addToken(
+                     checkUser[chatId].user_id,
+                     user[chatId]?.parameter,
+                     user[chatId]?.user_premium,
+                     user[chatId]?.user_premium_expires_at,
+                     user[chatId]?.payment_type,
+                     user[chatId]?.user_country_code,
+                     user[chatId]?.user_region,
+                     user[chatId]?.user_location,
+                     user[chatId]?.user_address_name,
+                     user[chatId]?.user_location_status,
+                     user[chatId]?.tracking
+                  )
+
+                  if (addToken) {
+                     const deleteUser = await model.deleteUser(user[chatId]?.user_id)
+                     console.log("delete", deleteUser)
+
+                     await model.addChatId(addToken.user_id, chatId)
+
+                     bot.sendMessage(chatId, `Ваш запрос успешно получен, вернитесь к приложению.`, {
+                        reply_markup: {
+                           keyboard: [
+                              [{
+                                 text: "Задавать вопрос"
+                              }, {
+                                 text: "Восстановление пароля"
+                              }]
+                           ],
+                           resize_keyboard: true
+                        }
+                     }).then(async () => {
+                        await model.editStep(chatId, 'menu_ru')
+                     });
+                  }
+               }
+
+            } else {
+               const updatedUserPhone = await model.updatedUserPhone(checkUser?.user_id, phoneNumber);
+               console.log(updatedUserPhone)
+
+               if (updatedUserPhone) {
+                  bot.sendMessage(chatId, `Ваш запрос успешно получен, вернитесь к приложению.`, {
+                     reply_markup: {
+                        keyboard: [
+                           [{
+                              text: "Задавать вопрос"
+                           }, {
+                              text: "Восстановление пароля"
+                           }]
+                        ],
+                        resize_keyboard: true
+                     }
+                  }).then(async () => {
+                     await model.editStep(chatId, 'menu_ru')
+                  });
+               }
+            }
+         } else if (foundUserChatId?.bot_step == 'change_password_uz') {
+            const checkUser = await model.checkUser(phoneNumber)
+
+            if (checkUser) {
+               await model.addChatId(checkUser?.user_id, chatId)
+
+               bot.sendMessage(chatId, 'Yangi parolingizni yozing').then(async () => {
+                  await model.editStep(chatId, 'new_password_uz')
+               });
+
+            } else {
+               bot.sendMessage(chatId, `Foydalanuvchi topilmadi`, {
+                  reply_markup: {
+                     keyboard: [
+                        [{
+                           text: "Murojaat qilish"
+                        }, {
+                           text: "Parolni tiklash"
+                        }]
+                     ],
+                     resize_keyboard: true
+                  }
+               }).then(async () => {
+                  await model.editStep(chatId, 'menu_uz')
+               });
+            }
+         } else if (foundUserChatId?.bot_step == 'change_password_ru') {
+            const checkUser = await model.checkUser(phoneNumber)
+
+            if (checkUser) {
+               await model.addChatId(checkUser?.user_id, chatId)
+
+               bot.sendMessage(chatId, 'Введите новый пароль').then(async () => {
+                  await model.editStep(chatId, 'new_password_ru')
+               });
+            } else {
+               bot.sendMessage(chatId, `Пользователь не найден`, {
+                  reply_markup: {
+                     keyboard: [
+                        [{
+                           text: "Задавать вопрос"
+                        }, {
+                           text: "Восстановление пароля"
+                        }]
+                     ],
+                     resize_keyboard: true
+                  }
+               }).then(async () => {
+                  await model.editStep(chatId, 'menu_ru')
+               });
+            }
+         }
+      } else {
+         return bot.sendMessage(msg.chat.id, "Kontakt noto'g'ri\n\nКонтакт неверный.", {
+            reply_markup: {
+               keyboard: [
+                  [{
+                     text: "Kontaktni yuborish (Отправить контакт)",
+                     request_contact: true
+                  }]
+               ],
+               resize_keyboard: true,
+               one_time_keyboard: true
+            }
+         })
+      }
+   }
+})
+
+bot.on('message', async (msg) => {
+   if (msg.chat.type === 'group' && msg.reply_to_message) {
+      const date = msg.reply_to_message.date;
+      console.log('date', date)
+      const foundMsg = await model.foundMsg(date);
+      console.log("bot", foundMsg)
+
+      let content;
+      if (msg.text) {
+         content = `${msg.text}`;
+         await bot.sendMessage(foundMsg?.chat_id, content).catch((error) => {
+            if (error.response && error.response.statusCode === 403) {
+               bot.sendMessage(process.env.CHAT_ID, `This user blocked bot`)
+            } else {
+               console.error('Error sending message:', error.message);
+            }
+         });
+      } else if (msg.photo) {
+         const fileId = msg.photo[msg.photo.length - 1].file_id; // Get the highest resolution photo
+         const caption = msg.caption ? msg.caption : '';
+         content = `${caption}`
+         await bot.sendPhoto(foundMsg?.chat_id, fileId, {
+            caption: content
+         }).catch((error) => {
+            if (error.response && error.response.statusCode === 403) {
+               bot.sendMessage(process.env.CHAT_ID, `This user blocked bot`)
+            } else {
+               console.error('Error sending message:', error.message);
+            }
+         });;
+      } else if (msg.sticker) {
+         const fileId = msg.sticker.file_id;
+         await bot.sendSticker(foundMsg?.chat_id, fileId).catch((error) => {
+            if (error.response && error.response.statusCode === 403) {
+               bot.sendMessage(process.env.CHAT_ID, `This user blocked bot`)
+            } else {
+               console.error('Error sending message:', error.message);
+            }
+         });;
+      }
+
+      // bot.sendMessage(foundMsg?.chat_id, `Javob: ${msg.text}`).catch((error) => {
+      //    if (error.response && error.response.statusCode === 403) {
+      //       bot.sendMessage(process.env.CHAT_ID, `This user blocked bot`)
+      //    } else {
+      //       console.error('Error sending message:', error.message);
+      //    }
+      // });
+   }
+});
+
+bot.onText(/\/reply/, (msg) => {
+   const chatId = msg.chat.id;
+   const repliedMessageId = msg.reply_to_message.message_id;
+   bot.sendMessage(chatId, 'Replying to the bot message', {
+      reply_to_message_id: repliedMessageId
+   });
+});
 
 app.get('/telegrambot', async (req, res) => {
    try {

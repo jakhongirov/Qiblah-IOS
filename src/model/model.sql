@@ -36,6 +36,8 @@ CREATE TABLE users (
    payment_type text,
    payment_tracking json [],
    tracking text [],
+   chat_id bigint,
+   bot_step text,
    user_create_at timestamptz DEFAULT CURRENT_TIMESTAMP
 );
 

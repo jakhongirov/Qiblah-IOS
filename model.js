@@ -87,20 +87,19 @@ const deleteUser = (id) => {
 
    return fetch(QUERY, id)
 }
-const updatedUserPhone = (id, phone_number, tracking) => {
+const updatedUserPhone = (id, phone_number) => {
    const QUERY = `
       UPDATE
          users
       SET
          user_phone_number = $2,
-         user_signin_method = 'withTelegram',
-         tracking = array_append(tracking, $3)
+         user_signin_method = 'withTelegram'
       WHERE
          user_id = $1
       RETURNING *;
-   `
+   `;
 
-   return fetch(QUERY, id, phone_number, tracking)
+   return fetch(QUERY, id, phone_number);
 }
 const updatedUserPassword = (user_id, pass_hash) => {
    const QUERY = `
@@ -154,17 +153,43 @@ const addUserComment = (id, text) => {
 
    return fetch(QUERY, id, text)
 }
-const foundUserByChatId = (chat_id) => {
+const foundUserChatId = (chatId) => {
    const QUERY = `
       SELECT
          *
       FROM
          users
       WHERE
-         $1 = ANY(user_comment);
+         chat_id = $1;
    `;
 
-   return fetch(QUERY, chat_id)
+   return fetch(QUERY, chatId)
+}
+const editStep = (chat_id, step) => {
+   const QUERY = `
+      UPDATE
+         users
+      SET
+         bot_step = $2
+      WHERE
+         chat_id = $1
+      RETURNING *;
+   `;
+
+   return fetch(QUERY, chat_id, step)
+}
+const addChatId = (user_id, chatId) => {
+   const QUERY = `
+      UPDATE
+         users
+      SET
+         chat_id = $2
+      WHERE
+         user_id = $1
+      RETURNING *;
+   `;
+
+   return fetch(QUERY, user_id, chatId)
 }
 
 module.exports = {
@@ -177,5 +202,7 @@ module.exports = {
    addMessage,
    foundMsg,
    addUserComment,
-   foundUserByChatId
+   foundUserChatId,
+   editStep,
+   addChatId
 }
