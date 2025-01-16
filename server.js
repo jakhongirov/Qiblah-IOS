@@ -154,22 +154,7 @@ bot.on('message', async (msg) => {
    const text = msg.text;
    const foundUserChatId = await model.foundUserChatId(chatId)
 
-   if (text == "O\'zbekcha" && foundUserChatId?.bot_step == 'start') {
-      bot.sendMessage(chatId, 'Iltimos, kerakli menyuni tanlang:', {
-         reply_markup: {
-            keyboard: [
-               [{
-                  text: "Murojaat qilish"
-               }, {
-                  text: "Parolni tiklash"
-               }]
-            ],
-            resize_keyboard: true
-         }
-      }).then(async () => {
-         await model.editStep(chatId, 'menu_uz')
-      });
-   } else if (text == "O\'zbekcha" && foundUserChatId?.bot_step == 'register') {
+   if (text == "O\'zbekcha" && foundUserChatId?.bot_step == 'register') {
       bot.sendMessage(chatId, `Iltimos, Ro'yxatdan o'tishni yakunlash uchun Kontaktingizni yuboring 🔽`, {
          reply_markup: {
             keyboard: [
@@ -184,20 +169,20 @@ bot.on('message', async (msg) => {
       }).then(async () => {
          await model.editStep(chatId, 'register_contact_uz')
       })
-   } else if (text == "Русский" && foundUserChatId?.bot_step == 'start') {
-      bot.sendMessage(chatId, 'Пожалуйста, выберите необходимое меню:', {
+   } else if (text == "O\'zbekcha" || foundUserChatId?.bot_step == 'start') {
+      bot.sendMessage(chatId, 'Iltimos, kerakli menyuni tanlang:', {
          reply_markup: {
             keyboard: [
                [{
-                  text: "Задавать вопрос"
+                  text: "Murojaat qilish"
                }, {
-                  text: "Восстановление пароля"
+                  text: "Parolni tiklash"
                }]
             ],
             resize_keyboard: true
          }
       }).then(async () => {
-         await model.editStep(chatId, 'menu_ru')
+         await model.editStep(chatId, 'menu_uz')
       });
    } else if (text == "Русский" && foundUserChatId?.bot_step == 'register') {
       bot.sendMessage(chatId, `Пожалуйста, отправьте свой контакт для завершения регистрации 🔽`, {
@@ -214,6 +199,21 @@ bot.on('message', async (msg) => {
       }).then(async () => {
          await model.editStep(chatId, 'register_contact_ru')
       })
+   } else if (text == "Русский" || foundUserChatId?.bot_step == 'start') {
+      bot.sendMessage(chatId, 'Пожалуйста, выберите необходимое меню:', {
+         reply_markup: {
+            keyboard: [
+               [{
+                  text: "Задавать вопрос"
+               }, {
+                  text: "Восстановление пароля"
+               }]
+            ],
+            resize_keyboard: true
+         }
+      }).then(async () => {
+         await model.editStep(chatId, 'menu_ru')
+      });
    } else if (text == 'Murojaat qilish') {
       bot.sendMessage(chatId, "Marhamat, murojaatingizni yozing:").then(async () => {
          await model.editStep(chatId, 'question_uz')
