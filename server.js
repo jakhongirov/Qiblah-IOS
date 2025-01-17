@@ -63,7 +63,7 @@ bot.onText(/\/start ?(.*)?/, async (msg, match) => {
             if (foundUserChatId) {
                await model.editStep(chatId, 'start')
             } else {
-               await model.addChatId(param.split('=')[1], chatId)
+               await model.addChatId(param, chatId)
                await model.editStep(chatId, 'start')
             }
          })
@@ -75,11 +75,11 @@ bot.onText(/\/start ?(.*)?/, async (msg, match) => {
             };
          }
 
-         const foundUser = await model.foundUser(param.split('=')[1]);
+         const foundUser = await model.foundUser(param);
 
          if (foundUser) {
             user[chatId] = foundUser;
-            user[chatId].parameter = param.split('=')[1];
+            user[chatId].parameter = param;
 
             const content = `Assalomu alaykum, ${foundUser?.user_name}, iltimos bot tilni tanlang:\n\nЗдравствуйте, ${foundUser?.user_name}, пожалуйста выберите язык бота:`;
 
