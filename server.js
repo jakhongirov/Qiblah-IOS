@@ -43,7 +43,7 @@ bot.onText(/\/start ?(.*)?/, async (msg, match) => {
    const foundUserChatId = await model.foundUserChatId(chatId)
 
    if (param) {
-      if (param?.startsWith('user_id=')) {
+      if (Number.isInteger(Number(param))) {
          const content = `Assalomu alaykum, ${username}, iltimos bot tilni tanlang:\n\nЗдравствуйте, ${username}, пожалуйста выберите язык бота:`;
 
          bot.sendMessage(chatId, content, {
@@ -67,7 +67,7 @@ bot.onText(/\/start ?(.*)?/, async (msg, match) => {
                await model.editStep(chatId, 'start')
             }
          })
-      } else if (param?.startsWith('token=')) {
+      } else if (typeof param === "string") {
 
          if (!user[chatId]) {
             user[chatId] = {
